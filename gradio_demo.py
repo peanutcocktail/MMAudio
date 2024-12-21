@@ -140,6 +140,7 @@ image_to_audio_tab = gr.Interface(
     ],
     outputs='playable_video',
     title='MMAudio — Image-to-Audio Synthesis',
+)
 
 
 video_to_audio_tab = gr.Interface(
