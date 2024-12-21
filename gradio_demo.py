@@ -283,5 +283,5 @@ text_to_audio_tab = gr.Interface(
 
 if __name__ == "__main__":
     gr.TabbedInterface([video_to_audio_tab, image_to_audio_tab, text_to_audio_tab],
-                       ['Video-to-Audio', 'Text-to-Audio']).launch(server_port=7860,
+                       ['Video-to-Audio', 'Image-to-Audio', 'Text-to-Audio']).launch(server_port=7860,
                                                                    allowed_paths=[output_dir])
