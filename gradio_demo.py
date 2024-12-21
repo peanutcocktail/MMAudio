@@ -6,7 +6,7 @@ import random
 import gradio as gr
 import torch
 import torchaudio
-from moviepy.editor import ImageClip
+import ffmpeg
 
 from mmaudio.eval_utils import (ModelConfig, all_model_cfg, generate, load_video, make_video,
                                 setup_eval_logging)
@@ -57,8 +57,8 @@ def random_seed():
 def image_to_audio(img: gr.Image, prompt: str, negative_prompt: str, seed: int, num_steps: int,
                    cfg_strength: float, duration: float):
     output_path = "temp.mp4"
-    clip = ImageClip(img).set_duration(duration)
-    clip.write_videofile(output_path, fps=24, codec="libx264", audio=False)
+    ffmpeg.input(img, t=duration, framerate=30, loop=1).output(output_path, vcodec="libx264", pix_fmt="yuv420p").run()
+
     return video_to_audio("temp.mp4", prompt, negative_prompt, seed, num_steps, cfg_strength, duration)
 
 @torch.inference_mode()
