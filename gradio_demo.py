@@ -130,7 +130,7 @@ def text_to_audio(prompt: str, negative_prompt: str, seed: int, num_steps: int, 
 image_to_audio_tab = gr.Interface(
     fn=image_to_audio,
     inputs=[
-        gr.Image(),
+        gr.Image(type="filepath"),
         gr.Text(label='Prompt'),
         gr.Text(label='Negative prompt', value='music'),
         gr.Number(label='Seed', value=0, precision=0, minimum=0),
