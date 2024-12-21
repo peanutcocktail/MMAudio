@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 import random
+import os
 
 import gradio as gr
 import torch
@@ -58,8 +59,8 @@ def image_to_audio(img: gr.Image, prompt: str, negative_prompt: str, seed: int, 
                    cfg_strength: float, duration: float):
     output_path = "temp.mp4"
     ffmpeg.input(img, t=duration, framerate=30, loop=1).output(output_path, vcodec="libx264", pix_fmt="yuv420p").run()
-
-    return video_to_audio("temp.mp4", prompt, negative_prompt, seed, num_steps, cfg_strength, duration)
+    os.remove(output_path)
+    return video_to_audio(output_path, prompt, negative_prompt, seed, num_steps, cfg_strength, duration)
 
 @torch.inference_mode()
 def video_to_audio(video: gr.Video, prompt: str, negative_prompt: str, seed: int, num_steps: int,
