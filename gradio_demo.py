@@ -60,6 +60,13 @@ def image_to_audio(img: gr.Image, prompt: str, negative_prompt: str, seed: int, 
     output_path = "temp.mp4"
     if os.path.exists(output_path):
         os.remove(output_path)
+    probe = ffmpeg.probe(img)
+    width = int(probe['streams'][0]['width'])
+    height = int(probe['streams'][0]['height'])
+    if width % 2 != 0 or height % 2 != 0:
+        new_width = width if width % 2 == 0 else width -1
+        new_height = height if height % 2 == 0 else height -1
+    ffmpeg.input(img).filter('scale', new_width, new_height).output(img).run()
     ffmpeg.input(img, t=duration, framerate=30, loop=1).output(output_path, vcodec="libx264", pix_fmt="yuv420p").run()
     return video_to_audio(output_path, prompt, negative_prompt, seed, num_steps, cfg_strength, duration)
 
