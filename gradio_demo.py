@@ -6,7 +6,7 @@ import random
 import gradio as gr
 import torch
 import torchaudio
-
+from moviepy.editor import ImageClip
 
 from mmaudio.eval_utils import (ModelConfig, all_model_cfg, generate, load_video, make_video,
                                 setup_eval_logging)
@@ -53,6 +53,13 @@ net, feature_utils, seq_cfg = get_model()
 def random_seed():
     return random.randint(1, 2**64)
 
+@torch.inference_mode()
+def image_to_audio(img: gr.Image, prompt: str, negative_prompt: str, seed: int, num_steps: int,
+                   cfg_strength: float, duration: float):
+    output_path = "temp.mp4"
+    clip = ImageClip(img).set_duration(duration)
+    clip.write_videofile(output_path, fps=24, codec="libx264", audio=False)
+    return video_to_audio("temp.mp4", prompt, negative_prompt, seed, num_steps, cfg_strength, duration)
 
 @torch.inference_mode()
 def video_to_audio(video: gr.Video, prompt: str, negative_prompt: str, seed: int, num_steps: int,
@@ -119,6 +126,20 @@ def text_to_audio(prompt: str, negative_prompt: str, seed: int, num_steps: int, 
     audio_save_path = output_dir / f'{current_time_string}.flac'
     torchaudio.save(audio_save_path, audio, seq_cfg.sampling_rate)
     return audio_save_path
+
+image_to_audio_tab = gr.Interface(
+    fn=image_to_audio,
+    inputs=[
+        gr.Image(),
+        gr.Text(label='Prompt'),
+        gr.Text(label='Negative prompt', value='music'),
+        gr.Number(label='Seed', value=0, precision=0, minimum=0),
+        gr.Number(label='Num steps', value=25, precision=0, minimum=1),
+        gr.Number(label='Guidance Strength', value=4.5, minimum=1),
+        gr.Number(label='Duration (sec)', value=8, minimum=1),
+    ],
+    outputs='playable_video',
+    title='MMAudio — Image-to-Audio Synthesis',
 
 
 video_to_audio_tab = gr.Interface(
@@ -260,6 +281,6 @@ text_to_audio_tab = gr.Interface(
 )
 
 if __name__ == "__main__":
-    gr.TabbedInterface([video_to_audio_tab, text_to_audio_tab],
+    gr.TabbedInterface([video_to_audio_tab, image_to_audio_tab, text_to_audio_tab],
                        ['Video-to-Audio', 'Text-to-Audio']).launch(server_port=7860,
                                                                    allowed_paths=[output_dir])
